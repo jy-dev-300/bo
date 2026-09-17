@@ -1,0 +1,4 @@
+March research report
+
+The orange bar chart compares retrieval latency. BM25 had a median latency of 18 milliseconds, while vector search had a median latency of 42 milliseconds. The chart appears on page 3 of the original report.
+

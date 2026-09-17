@@ -1,0 +1,320 @@
+You are acting as a senior AI engineer and university professor.
+
+This repository is Assignment 3 of my AI Engineering hiring portfolio.
+
+PROJECT:
+Personal Search + Grounded RAG
+
+PRODUCT:
+
+A local-first system that indexes a user's:
+
+- PDFs
+- text documents
+- notes
+- screenshots
+- images
+- source code
+
+and supports TWO related experiences:
+
+A. RETRIEVAL
+
+Find something from vague memory:
+
+"that PDF with the orange chart from March"
+
+"the screenshot with the Korean address"
+
+"the Python file where I implemented retries"
+
+B. GROUNDED RAG
+
+Ask questions across the corpus and receive answers grounded in retrieved evidence with inspectable citations.
+
+The system should make clear what evidence supported the answer.
+
+THIS IS NOT:
+
+"upload PDF → send entire PDF to an LLM"
+
+LEARNING GOAL:
+
+I need production-relevant understanding of:
+
+- ingestion
+- parsing
+- OCR
+- chunking
+- metadata
+- embeddings
+- BM25 / lexical retrieval
+- vector retrieval
+- hybrid retrieval
+- reranking
+- context construction
+- grounded generation
+- citations
+- retrieval evals
+- RAG evals
+
+Codex scaffolds 70–80%.
+
+I manually implement the highest-value 20–30%.
+
+THIS WILL BE SHIPPED:
+Design the project as a real local-first product that another person can install/use.
+Do not treat it as a toy RAG demo.
+Keep the first release narrow enough to ship.
+
+STACK:
+
+- Python 3.12
+- FastAPI
+- PostgreSQL + pgvector
+- SQLAlchemy
+- React + TypeScript
+- pytest
+- Docker Compose
+- pluggable embeddings/reranker/LLM interfaces
+
+Keep it local-first where practical.
+
+FIRST TASK:
+
+Create:
+
+README.md
+ARCHITECTURE.md
+STUDENT_TASKS.md
+INTERVIEW_DRILLS.md
+
+Scaffold:
+
+backend/
+frontend/
+ingestion/
+retrieval/
+rag/
+evaluation/
+tests/
+sample_corpus/
+
+ARCHITECTURE.md must separately show:
+
+INGESTION FLOW
+
+file
+→ parser/OCR
+→ normalized document
+→ chunks
+→ metadata
+→ lexical index
+→ embeddings/vector index
+
+QUERY FLOW
+
+query
+→ query processing
+→ lexical retrieval
+→ vector retrieval
+→ candidate fusion
+→ reranking
+→ context selection
+→ generation
+→ citations
+
+Explain why every stage exists.
+
+DO NOT implement these core student assignments:
+
+COMPLETED IMPLEMENTATION A:
+Production chunking
+
+Preserve the strategy-driven implementation in ingestion/chunking.py:
+
+- Chonkie SentenceChunker for deterministic prose
+- Chonkie SemanticChunker for optional topic-shift boundaries
+- Tree-sitter AST boundaries plus Chonkie TokenChunker hard limits for code
+- explicit character/token budgets and one-directional overlap
+- exact page/section/line/character provenance reconstruction
+- deterministic IDs derived from content, policy and source locations
+
+Do not regenerate the old manual regex packer or restore Task A's xfail marker.
+
+STUDENT IMPLEMENTATION B:
+Hybrid retrieval
+
+I implement combining lexical and vector candidates.
+
+Teach me enough to understand techniques such as rank fusion, but do not implement the final function.
+
+STUDENT IMPLEMENTATION C:
+Reranking + context selection
+
+Give me a reranker abstraction.
+
+I implement:
+
+candidate ranking
+→ context budget
+→ deduplication
+→ final evidence selection
+
+STUDENT IMPLEMENTATION D:
+Grounded citation assembly
+
+I implement mapping generated claims back to retrieved source chunks so the answer exposes inspectable sources.
+
+STUDENT IMPLEMENTATION E:
+Retrieval evaluation
+
+Create a small gold dataset:
+
+query
+→ relevant document/chunk IDs
+
+The scaffold now provides baseline Recall@k, reciprocal rank, and a per-query
+stage-comparison command for BM25 -> BGE-M3 hybrid -> cross-encoder -> optional
+SPLADE++. I extend the gold queries, inspect misses, and decide whether each
+stage improves quality enough to justify its latency and model cost.
+
+STUDENT IMPLEMENTATION F:
+RAG evaluation
+
+Evaluate separately:
+
+1. did retrieval find the evidence?
+2. did the generated answer use the evidence correctly?
+3. was the answer supported?
+4. were citations correct?
+
+Do not collapse everything into one LLM judge score.
+
+STUDENT IMPLEMENTATION G:
+Query processing
+
+I implement:
+
+- rewriting or expanding ambiguous queries
+- deciding when metadata filters apply
+- preserving exact filenames, addresses, dates, quoted phrases and code identifiers
+- retaining the raw query alongside rewritten forms
+- comparing raw query vs rewritten query in retrieval evals
+
+Provide interfaces, fixtures and tests.
+
+Evaluation must expose Recall@k, MRR, latency and exact-term regressions rather than assuming rewriting is always beneficial.
+
+STUDENT IMPLEMENTATION H:
+Index lifecycle and updates
+
+I implement consistent add/update/delete behavior across:
+
+- documents
+- chunks
+- lexical index entries
+- embeddings
+- vector index entries
+
+Teach incremental ingestion, idempotency, checksums, pipeline/model versioning, stale-index prevention, transaction boundaries and recovery from partial failure.
+
+Provide repository interfaces, fixtures and tests that verify:
+
+- unchanged files are safe to re-index
+- replaced files leave no stale chunks
+- deleted files leave no searchable derived artifacts
+- chunking-policy or embedding-model changes trigger the correct rebuild
+
+STUDENT IMPLEMENTATION I:
+End-to-end failure diagnosis
+
+Provide one reproducible query that returns the wrong result or produces an unsupported answer.
+
+I diagnose whether the failure came from:
+
+chunking -> retrieval -> reranking -> context -> generation -> citation
+
+I fix only the responsible layer, preserve the failure as a regression test and prove the appropriate retrieval, grounding, citation or latency metric improved.
+
+Require the diagnosis and before/after evidence to be recorded in RESULTS.md.
+
+HIRING SIGNAL:
+
+An interviewer should see that I understand WHY naive RAG fails.
+
+The final project should eventually demonstrate experiments such as:
+
+- vector-only vs BM25-only vs hybrid
+- different chunk sizes
+- before/after reranking
+- different top-k
+- context-budget tradeoffs
+- retrieval quality vs latency
+- hallucination/grounding failures
+
+Create RESULTS.md template for those ablations.
+
+IMPORTANT:
+
+Do NOT make LangChain or another orchestration framework hide the core retrieval logic.
+
+Libraries are fine for commodity functionality.
+
+The important retrieval pipeline should remain visible in our code.
+
+CODE STYLE:
+
+Readable, explicit Python.
+
+I should be able to follow:
+
+query
+→ candidates
+→ ranks
+→ context
+→ answer
+
+without digging through framework magic.
+
+INTERVIEW_DRILLS.md should eventually contain:
+
+- change chunk size and predict consequences
+- add metadata filtering
+- diagnose failed retrieval
+- change top-k
+- implement query rewriting
+- handle duplicate chunks
+- replace embedding model
+- explain BM25 vs vector search
+- reduce RAG latency
+- debug an unsupported citation
+
+FIRST PASS:
+
+architecture
+→ scaffold
+→ infrastructure
+→ minimal baseline retrieval path
+→ tests and student tasks
+→ stop
+
+RECOMMENDED STUDENT ORDER:
+
+A chunking
+-> H index lifecycle and updates
+-> G query processing
+-> B hybrid retrieval
+-> C reranking and context selection
+-> D grounded citation assembly
+-> E retrieval evaluation
+-> F RAG evaluation
+-> I end-to-end failure diagnosis
+
+At the end tell me:
+
+- architecture in plain English
+- first manual function
+- what I must understand before coding it
+- one example query traced end-to-end
+- 5 oral-exam questions

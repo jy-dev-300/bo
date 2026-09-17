@@ -1,0 +1,4 @@
+{"id":"q-orange-chart","query":"that PDF with the orange chart from March","relevant_chunk_ids":["doc-march-report:000"],"tags":["vague-memory","date","visual"]}
+{"id":"q-korean-address","query":"the screenshot with the Korean address","relevant_chunk_ids":["doc-seoul-address:000"],"tags":["vague-memory","ocr","korean"]}
+{"id":"q-retries","query":"the Python file where I implemented retries","relevant_chunk_ids":["doc-retry-example:000"],"tags":["code","exact-term"]}
+
