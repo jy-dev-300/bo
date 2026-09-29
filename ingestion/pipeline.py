@@ -18,6 +18,5 @@ def normalize_file(path: Path, media_type: str, deps: IngestionDependencies) -> 
         raise ValueError(f"No parser configured for {media_type}: {path}")
     raise NotImplementedError(
         "Parser adapters and checksum persistence are infrastructure follow-up work; "
-        "chunking remains separately student-owned."
+        "chunking remains a separate pipeline stage."
     )
-

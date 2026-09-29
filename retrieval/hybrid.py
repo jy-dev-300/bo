@@ -11,19 +11,7 @@ def fuse_candidates(
     rank_constant: int = 60,
     additional_rankings: Mapping[str, Sequence[RetrievalCandidate]] | None = None,
 ) -> list[RetrievalCandidate]:
-    """Combine two ranked lists without assuming their raw scores are comparable.
-
-    Student Implementation B. Consider rank fusion, duplicates, ties, missing
-    candidates, provenance, and deterministic output. Do not sum raw scores.
-
-    Josh:
-    Reciprocal Rank Fusion (RRF):
-        each doc gets a score:
-        1 / (k + rank)
-        say lex rank = 1, vec rank = 3 for doc A
-        doc A score = 1 / (k + 1) + 1 / (k + 3), where k is smoothing constant
-
-    """
+    """Combine ranked lists with RRF without mixing incomparable raw scores."""
     rankings: dict[str, Sequence[RetrievalCandidate]] = {
         "lexical": lexical,
         "vector": vector,

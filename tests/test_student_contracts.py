@@ -4,6 +4,7 @@ from retrieval.hybrid import fuse_candidates
 
 
 def test_chunking_is_deterministic_and_preserves_provenance(prose_document) -> None:
+    """Verify stable chunk IDs and source paths across identical chunking runs."""
     policy = ChunkingPolicy(target_size=20, overlap=5, size_unit="tokens")
 
     first = chunk_document(prose_document, policy)
@@ -16,4 +17,5 @@ def test_chunking_is_deterministic_and_preserves_provenance(prose_document) -> N
 
 
 def test_hybrid_fusion_deduplicates_candidates_and_is_deterministic() -> None:
+    """Verify that an empty fusion is stable and contains no duplicate output."""
     assert fuse_candidates([], [], limit=10) == []

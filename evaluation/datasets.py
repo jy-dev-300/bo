@@ -5,6 +5,7 @@ from evaluation.models import RetrievalGoldCase
 
 
 def load_retrieval_gold(path: Path) -> list[RetrievalGoldCase]:
+    """Load test questions and their expected correct chunk IDs from a JSONL file."""
     cases: list[RetrievalGoldCase] = []
     with path.open(encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, start=1):
@@ -15,4 +16,3 @@ def load_retrieval_gold(path: Path) -> list[RetrievalGoldCase]:
             except (json.JSONDecodeError, ValueError) as exc:
                 raise ValueError(f"Invalid retrieval case at {path}:{line_number}") from exc
     return cases
-

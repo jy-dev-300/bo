@@ -1,8 +1,8 @@
 # Sample corpus
 
 These synthetic fixtures make the baseline deterministic and safe to publish. `chunks.jsonl` is
-a stable retrieval fixture; Student Implementation A is now implemented separately in
-`ingestion/chunking.py` and can regenerate future indexed corpora through the ingestion pipeline.
+a stable retrieval fixture; `ingestion/chunking.py` can regenerate future indexed corpora through
+the ingestion pipeline.
 
 - `documents/` contains the readable source fixtures.
 - `chunks.jsonl` contains stable chunk IDs and provenance.

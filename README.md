@@ -1,6 +1,6 @@
-# Personal Search + Grounded RAG
+# Bo — Local-First Search + Grounded RAG
 
-A local-first learning project for finding files from vague memories and, eventually, answering questions with inspectable evidence. The first pass deliberately ships only a lexical-search vertical slice. The most educational retrieval and RAG functions are left for the student and are named in `STUDENT_TASKS.md`.
+A local-first application for finding files from vague memories and answering questions with inspectable evidence. Its retrieval pipeline keeps exact-match, semantic, fusion, reranking, and citation stages explicit so their quality and cost can be measured independently.
 
 ## What works now
 
@@ -12,7 +12,7 @@ A local-first learning project for finding files from vague memories and, eventu
 - A small React/TypeScript search interface.
 - Contract fixtures, a gold retrieval dataset, and tests.
 
-The API intentionally does **not** yet ingest arbitrary files or answer RAG questions. Those paths depend on student-owned implementations and must not silently fall back to sending whole documents to a model.
+The API does **not** silently fall back to sending whole documents to a model when a pipeline stage is unavailable.
 
 ## Run locally
 
@@ -44,9 +44,11 @@ docker compose up --build
 Set `RETRIEVAL_MODE` to one stage at a time in `.env`:
 
 1. `bm25` (default): exact-word search only; no model download.
-2. `hybrid`: add BGE-M3 dense, learned-sparse, and ColBERT-style candidate lists; combine them with RRF.
-3. `rerank`: add the BGE cross-encoder and diversity selection to `hybrid`.
-4. `specialists`: add a separate English-only SPLADE++ candidate list to `rerank`.
+2. `bge_dense`: BGE-M3 dense-vector retrieval alone, exposed for baseline testing.
+3. `hybrid`: add BGE-M3 dense, learned-sparse, and ColBERT-style candidate lists; combine them with RRF.
+4. `rerank` / `rerank_bge`: add the BGE cross-encoder and diversity selection to `hybrid`.
+5. `rerank_jev`: apply TypeSafe Jev to the same `hybrid` shortlist and diversity policy.
+6. `specialists`: add a separate English-only SPLADE++ candidate list to `rerank`.
 
 `advanced` remains an alias for `specialists` for existing configurations.
 Model-backed stages load weights on first search and need several gigabytes of
@@ -55,8 +57,14 @@ local storage. Compare stages on the labeled queries before advancing:
 ```powershell
 python -m evaluation.compare_retrieval --stages bm25 --k 3
 python -m evaluation.compare_retrieval --stages bm25 hybrid rerank --k 3
+python -m evaluation.compare_retrieval --stages rerank_bge rerank_jev --k 3
 python -m evaluation.compare_retrieval --stages bm25 hybrid rerank specialists --k 3
 ```
+
+The Jev comparison requires `TYPESAFE_API_KEY`. Both reranker stages use the same
+BGE-M3 hybrid candidate generator; only the final reranker changes. Compare their
+per-query ranks and MRR on harder labeled queries, since the bundled three-query set
+already has no useful headroom at `k=3`.
 
 Only the stages named in a command run; commands containing `hybrid`, `rerank`,
 or `specialists` may download model weights. The report shows each query's
@@ -79,13 +87,12 @@ ruff check .
 ## Repository map
 
 - `backend/`: HTTP boundary, configuration, and persistence schema.
-- `ingestion/`: parser/OCR contracts, normalized models, and the student chunker.
+- `ingestion/`: parser/OCR contracts, normalized models, and provenance-aware chunking.
 - `retrieval/`: BM25, multi-signal advanced ranking, and provider contracts.
 - `rag/`: implemented candidate reranking/context selection, with generation and citation boundaries.
-- `evaluation/`: gold-set loading plus student retrieval/RAG metrics.
+- `evaluation/`: gold-set loading plus retrieval and RAG metrics.
 - `frontend/`: minimal retrieval UI.
 - `sample_corpus/`: deterministic, already-chunked fixtures and gold queries.
-- `tests/`: working-baseline tests and skipped student acceptance tests.
+- `tests/`: unit, contract, and pipeline tests.
 
-Read `ARCHITECTURE.md` before writing code. Student Implementation A is complete; continue with
-Student Implementation H in `STUDENT_TASKS.md`.
+Read `ARCHITECTURE.md` for the pipeline boundaries, data contracts, and known failure modes.

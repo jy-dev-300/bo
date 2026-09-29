@@ -6,6 +6,7 @@ from ingestion.models import NormalizedBlock, NormalizedDocument, SourceLocation
 
 
 def make_document(*blocks: NormalizedBlock) -> NormalizedDocument:
+    """Build a normalized fixture document from the supplied source blocks."""
     return NormalizedDocument(
         id="doc-test",
         source_path="notes/test.md",
@@ -16,6 +17,7 @@ def make_document(*blocks: NormalizedBlock) -> NormalizedDocument:
 
 
 def test_empty_and_whitespace_only_documents_return_no_chunks() -> None:
+    """Verify that chunking omits documents without meaningful text."""
     document = make_document(
         NormalizedBlock(
             kind="paragraph",
@@ -27,6 +29,7 @@ def test_empty_and_whitespace_only_documents_return_no_chunks() -> None:
 
 
 def test_sentence_chunker_obeys_character_budget_and_overlap() -> None:
+    """Verify sentence chunk sizes and overlap under a character budget."""
     text = "Alpha one. Beta two. Gamma three. Delta four."
     document = make_document(
         NormalizedBlock(
@@ -49,6 +52,7 @@ def test_sentence_chunker_obeys_character_budget_and_overlap() -> None:
 
 
 def test_heading_stays_with_compatible_prose_and_source_locations_survive() -> None:
+    """Verify that compatible headings stay attached and retain source locations."""
     document = make_document(
         NormalizedBlock(
             kind="heading",
@@ -81,6 +85,7 @@ def test_heading_stays_with_compatible_prose_and_source_locations_survive() -> N
 
 
 def test_new_heading_and_incompatible_page_start_new_groups() -> None:
+    """Verify that new headings or page changes create separate prose groups."""
     document = make_document(
         NormalizedBlock(
             kind="paragraph",
@@ -104,6 +109,7 @@ def test_new_heading_and_incompatible_page_start_new_groups() -> None:
 
 
 def test_token_mode_uses_declared_tokenizer_not_character_count() -> None:
+    """Verify that token budgets use the declared tokenizer rather than text length."""
     text = "one two three four five six seven eight"
     document = make_document(
         NormalizedBlock(
@@ -126,6 +132,7 @@ def test_token_mode_uses_declared_tokenizer_not_character_count() -> None:
 
 
 def test_tokenizer_normalization_does_not_corrupt_source_offsets() -> None:
+    """Verify that normalized tokenizer output cannot shift original text offsets."""
     text = "Deep learning systems train on large datasets."
     external = TokenChunker(tokenizer="word", chunk_size=4)(text)
     spans = exact_token_chunk_spans(text, external)
@@ -136,6 +143,7 @@ def test_tokenizer_normalization_does_not_corrupt_source_offsets() -> None:
 
 
 def test_code_uses_syntax_path_and_preserves_line_ranges() -> None:
+    """Verify syntax-aware code chunking and preservation of source line ranges."""
     code = "def one():\n    return 1\n\ndef two():\n    return 2\n"
     document = make_document(
         NormalizedBlock(
@@ -159,6 +167,7 @@ def test_code_uses_syntax_path_and_preserves_line_ranges() -> None:
 
 
 def test_policy_rejects_impossible_and_mismatched_budgets() -> None:
+    """Verify that invalid overlap and semantic-unit combinations are rejected."""
     with pytest.raises(ValueError, match="overlap must be smaller"):
         ChunkingPolicy(target_size=10, overlap=10)
     with pytest.raises(ValueError, match="size_unit='tokens'"):

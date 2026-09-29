@@ -9,5 +9,15 @@ frontend/dist/
 frontend/*.tsbuildinfo
 frontend/vite.config.js
 frontend/vite.config.d.ts
+bo-bge-file-index/
+bo-bge-embeds/
 .idea/
 .vscode/
+
+# Personal learning and interview notes (kept locally, not published)
+STUDENT_TASKS.md
+LEARNING.md
+INTERVIEW_DRILLS.md
+scaffolding-prompt.txt
+engineering-decision.md
+testing.md

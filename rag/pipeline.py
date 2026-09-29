@@ -18,8 +18,7 @@ class RAGDependencies:
 def answer_question(query: str, deps: RAGDependencies) -> GroundedAnswer:
     """Future orchestration point; stages stay named and inspectable.
 
-    This remains unavailable until Student Implementations B-D are complete, so
-    the API cannot present ungrounded generation as a working RAG answer.
+    This remains unavailable until retrieval, selection, and citation stages are
+    connected, so the API cannot present ungrounded generation as a working answer.
     """
     raise NotImplementedError("Complete hybrid retrieval, selection, and citations first")
-

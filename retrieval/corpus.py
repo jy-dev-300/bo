@@ -5,6 +5,7 @@ from ingestion.models import Chunk
 
 
 def load_chunks_jsonl(path: Path) -> list[Chunk]:
+    """Read validated chunks from a newline-delimited JSON corpus file."""
     if not path.exists():
         raise FileNotFoundError(f"Pre-chunked corpus not found: {path}")
 
@@ -18,4 +19,3 @@ def load_chunks_jsonl(path: Path) -> list[Chunk]:
             except (json.JSONDecodeError, ValueError) as exc:
                 raise ValueError(f"Invalid chunk at {path}:{line_number}") from exc
     return chunks
-

@@ -1,11 +1,7 @@
 """Structure-, syntax-, and semantics-aware document chunking.
 
-The original Student Task A implementation manually split prose with a regular
-expression, packed character windows, and added overlap from both neighbours.
-That version was useful practice, but it treated token budgets as characters
-and could double a middle chunk's overlap. The production path below delegates
-prose boundary detection and token accounting to Chonkie while keeping this
-project's provenance model and deterministic identifiers in our code.
+Prose boundary detection and token accounting are delegated to Chonkie while
+the project retains provenance mapping and deterministic identifiers.
 """
 
 import hashlib
@@ -78,6 +74,7 @@ class ChunkingPolicy(BaseModel):
 
     @model_validator(mode="after")
     def validate_budget(self) -> "ChunkingPolicy":
+        """Reject chunking settings whose size, overlap, or units cannot work together."""
         if self.overlap >= self.target_size:
             raise ValueError("overlap must be smaller than target_size")
         if self.strategy == "semantic" and self.size_unit != "tokens":
@@ -89,6 +86,7 @@ class ChunkingPolicy(BaseModel):
 
     @property
     def resolved_tokenizer(self) -> str:
+        """Return the configured tokenizer or the character-mode tokenizer."""
         return "character" if self.size_unit == "characters" else self.tokenizer
 
 
@@ -120,6 +118,7 @@ def shared_location_value(
     locations: tuple[SourceLocation, ...],
     field_name: Literal["page", "section"],
 ) -> int | str | None:
+    """Return a location field only when every source span shares one value."""
     values = {
         getattr(location, field_name)
         for location in locations
@@ -133,6 +132,7 @@ def chunk_metadata(
     locations: tuple[SourceLocation, ...],
     attributes: dict[str, Any] | None = None,
 ) -> ChunkMetadata:
+    """Combine source spans into the provenance metadata stored on one chunk."""
     line_starts = [location.line_start for location in locations if location.line_start is not None]
     line_ends = [location.line_end for location in locations if location.line_end is not None]
     char_starts = [location.char_start for location in locations if location.char_start is not None]
@@ -158,6 +158,7 @@ def chunk_metadata(
 
 
 def locations_are_compatible(left: SourceLocation, right: SourceLocation) -> bool:
+    """Return whether adjacent source locations can safely share a prose group."""
     if left.source_path != right.source_path:
         return False
     for field_name in ("page", "section"):
@@ -174,6 +175,7 @@ def compose_prose_groups(document: NormalizedDocument) -> list[ProseGroup | Norm
     blocks: list[NormalizedBlock] = []
 
     def flush() -> None:
+        """Save the accumulated prose group and reset the local buffer."""
         if not blocks:
             return
         pieces: list[str] = []
@@ -212,6 +214,7 @@ def locations_for_group_span(
     start: int,
     end: int,
 ) -> tuple[SourceLocation, ...]:
+    """Project a grouped-text span back onto its original source locations."""
     locations: list[SourceLocation] = []
     for span in group.spans:
         selected_start = max(start, span.start)
@@ -247,6 +250,7 @@ def exact_token_chunk_spans(
 
 
 def sentence_units(group: ProseGroup, policy: ChunkingPolicy) -> list[LocatedText]:
+    """Split prose into sentence-aware units that obey the declared budget."""
     chunker = SentenceChunker(
         tokenizer=policy.resolved_tokenizer,
         chunk_size=policy.target_size,
@@ -299,6 +303,7 @@ def sentence_units(group: ProseGroup, policy: ChunkingPolicy) -> list[LocatedTex
 
 
 def semantic_units(group: ProseGroup, policy: ChunkingPolicy) -> list[LocatedText]:
+    """Split prose at semantic boundaries while preserving source locations."""
     # Reserve space before adding prefix overlap so final chunks keep the hard budget.
     base_size = policy.target_size - policy.overlap
     chunker = SemanticChunker(
@@ -369,6 +374,7 @@ def detect_code_block_language(
     document: NormalizedDocument,
     block: NormalizedBlock,
 ) -> str | None:
+    """Infer the Tree-sitter language from block metadata, content, or file path."""
     explicit_language = block.attributes.get("language")
     if isinstance(explicit_language, str) and explicit_language.strip():
         language_hint = explicit_language.strip().lower()
@@ -389,6 +395,7 @@ def code_unit(
     language: str | None,
     chunker_name: str,
 ) -> LocatedText:
+    """Create one code unit and map its text span back to source provenance."""
     return LocatedText(
         text=text,
         locations=(location_for_text_span(block.location, block.text, start, end),),
@@ -407,6 +414,7 @@ def fallback_code_units(
     language: str | None,
     reason: str,
 ) -> list[LocatedText]:
+    """Split code with the token fallback when syntax-aware parsing cannot be used."""
     chunker = TokenChunker(
         tokenizer=policy.resolved_tokenizer,
         chunk_size=policy.target_size,
@@ -489,6 +497,7 @@ def deterministic_chunk_id(
     ordinal: int,
     draft: LocatedText,
 ) -> str:
+    """Build a stable ID from the document, policy, ordinal, text, and locations."""
     identity = {
         "checksum": document.checksum,
         "ordinal": ordinal,

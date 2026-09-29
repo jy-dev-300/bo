@@ -1,2 +1,1 @@
-"""Retrieval and grounded-answer evaluation contracts."""
-
+"""Tools for checking whether search and generated answers work correctly."""

@@ -21,7 +21,7 @@ file
 1. **File:** preserves source identity, checksum, media type, timestamps, and a resolvable local path. A checksum makes re-ingestion idempotent.
 2. **Parser/OCR:** extracts text and structural hints. Native text is preferred; OCR is used for pixels or image-only pages and records its engine/confidence.
 3. **Normalized document:** converts unlike inputs into one typed representation while retaining pages, sections, code symbols, and image observations.
-4. **Chunks:** create retrieval-sized evidence units with Chonkie sentence/semantic strategies and Tree-sitter code boundaries. Boundaries affect recall, precision, prompt cost, and whether a citation remains meaningful. Student Implementation A is complete.
+4. **Chunks:** create retrieval-sized evidence units with Chonkie sentence/semantic strategies and Tree-sitter code boundaries. Boundaries affect recall, precision, prompt cost, and whether a citation remains meaningful.
 5. **Metadata:** carries provenance and filterable facts (document ID, page, section, language, date, file type, offsets) through every later stage.
 6. **Lexical index:** supports exact tokens, filenames, addresses, identifiers, and rare phrases that semantic similarity can miss.
 7. **Embeddings/vector index:** supports conceptual or vague-memory matches even when query and source use different words.
@@ -44,11 +44,11 @@ query
 1. **Query processing:** validates input and may derive filters or alternate forms without discarding the original query.
 2. **Lexical retrieval:** produces ranked exact-match candidates with scores and rank provenance.
 3. **Vector retrieval:** produces ranked semantic candidates using the same chunk IDs.
-4. **Candidate fusion:** combines incomparable score spaces using ranks or calibrated scores. This is Student Implementation B.
-5. **Reranking:** spends more compute on a small candidate set to estimate query/chunk relevance. Part of Student Implementation C.
-6. **Context selection:** deduplicates evidence and fills a declared token/character budget while preserving source diversity and citation metadata. Part of Student Implementation C.
+4. **Candidate fusion:** combines incomparable score spaces using ranks or calibrated scores.
+5. **Reranking:** spends more compute on a small candidate set to estimate query/chunk relevance.
+6. **Context selection:** deduplicates evidence and fills a declared token/character budget while preserving source diversity and citation metadata.
 7. **Generation:** instructs a pluggable LLM to answer only from the selected evidence and abstain when evidence is insufficient.
-8. **Citations:** maps answer claims to stable chunk/source locations that a user can inspect. This is Student Implementation D; model-emitted citation strings alone are not trusted.
+8. **Citations:** maps answer claims to stable chunk/source locations that a user can inspect; model-emitted citation strings alone are not trusted.
 
 ## Main data contracts
 

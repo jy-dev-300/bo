@@ -7,6 +7,7 @@ from retrieval.models import RetrievalCandidate
 
 
 def candidate(chunk_id: str, rank: int) -> RetrievalCandidate:
+    """Create a minimal retrieval candidate with a chosen ID and rank."""
     return RetrievalCandidate(
         chunk=Chunk(
             id=chunk_id,
@@ -22,6 +23,7 @@ def candidate(chunk_id: str, rank: int) -> RetrievalCandidate:
 
 
 def test_recall_counts_distinct_relevant_chunks_within_k() -> None:
+    """Verify that Recall@k counts unique relevant IDs inside the cutoff."""
     assert recall_at_k(["a", "a", "b"], {"a", "b"}, k=2) == 0.5
     assert recall_at_k(["a", "b"], {"a", "b"}, k=2) == 1.0
     with pytest.raises(ValueError):
@@ -29,17 +31,20 @@ def test_recall_counts_distinct_relevant_chunks_within_k() -> None:
 
 
 def test_reciprocal_rank_uses_first_relevant_hit() -> None:
+    """Verify that reciprocal rank is based on the earliest relevant candidate."""
     assert reciprocal_rank(["wrong", "right", "right"], {"right"}) == 0.5
     assert reciprocal_rank(["wrong"], {"right"}) == 0.0
 
 
 def test_evaluation_keeps_per_query_hits_and_scores() -> None:
+    """Verify that evaluation retains each query's hits and computed metrics."""
     cases = [
         RetrievalGoldCase(id="q1", query="found", relevant_chunk_ids={"right"}),
         RetrievalGoldCase(id="q2", query="missing", relevant_chunk_ids={"other"}),
     ]
 
     def search(query: str, limit: int) -> list[RetrievalCandidate]:
+        """Return the fixture ranking associated with the requested query."""
         assert limit == 2
         return [candidate("wrong", 1), candidate("right", 2)]
 

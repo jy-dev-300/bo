@@ -5,6 +5,7 @@ from retrieval.query_processing import expand_query
 
 
 def make_candidate(chunk_id: str, rank: int, source: str) -> RetrievalCandidate:
+    """Create a minimal ranked candidate for fusion tests."""
     return RetrievalCandidate(
         chunk=Chunk(
             id=chunk_id,
@@ -20,6 +21,7 @@ def make_candidate(chunk_id: str, rank: int, source: str) -> RetrievalCandidate:
 
 
 def test_rrf_deduplicates_and_is_deterministic() -> None:
+    """Verify that reciprocal-rank fusion deduplicates IDs with stable ordering."""
     lexical = [
         make_candidate("a:0", 1, "lexical"),
         make_candidate("a:0", 3, "lexical"),
@@ -45,6 +47,7 @@ def test_rrf_deduplicates_and_is_deterministic() -> None:
 
 
 def test_query_expansion_preserves_original_and_splits_identifiers() -> None:
+    """Verify that expansion keeps the raw query and exposes identifier words."""
     assert expand_query("find fetch_withRetries.py") == [
         "find fetch_withRetries.py",
         "find fetch with Retries py",
